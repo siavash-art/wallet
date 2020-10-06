@@ -56,3 +56,33 @@ func TestService_Reject_success(t *testing.T){
 		t.Errorf("\n Reject: error = %v", err)
 	}
 }
+
+func TestService_Repeat_success(t *testing.T) {
+	s := Service{}
+	s.RegisterAccount("+992938638676")
+
+	account, err := s.FindAccountByID(1)
+	if err != nil {
+		t.Errorf("\n FindAccountByID(): error = %v", err)
+	}
+
+	err = s.Deposit(account.ID, 200_00)
+	if err != nil {
+		t.Errorf("\n Deposit(): error = %v", err)
+	}
+
+	payment, err := s.Pay(account.ID, 100_00, "cat")
+	if err != nil {
+		t.Errorf("\n Deposit(): error = %v", err)
+	}
+
+	pay, err := s.FindPaymentByID(payment.ID)
+	if err != nil {
+		t.Errorf("\n Deposit(): error = %v", err)
+	}
+
+	pay, err = s.Repeat(pay.ID)
+	if err != nil {
+		t.Errorf("Repeat(): Error(): can't pay (%v): %v", pay.ID, err)
+	}
+}
