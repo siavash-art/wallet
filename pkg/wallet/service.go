@@ -290,12 +290,12 @@ func (s *Service) ImportFromFile(path string) error {
 
 	data := string(content)
 	
-	accounts := strings.Split(data, ":")
+	accounts := strings.Split(data, "|")
 	accounts = accounts[:len(accounts)-1]
 	
 	for _, account := range accounts {
 		
-		value := strings.Split(account, "/")
+		value := strings.Split(account, ";")
 		
 		id,err := strconv.Atoi(value[0])
 		if err!=nil {
