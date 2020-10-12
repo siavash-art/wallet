@@ -1,12 +1,14 @@
 package wallet
 
 import (	
+	"io"
 	"github.com/siavash-art/wallet/pkg/types"
 	"github.com/google/uuid"
 	"errors"
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var ErrPhoneRegistered = errors.New("phone already registered")
@@ -238,7 +240,7 @@ func (s *Service) ExportToFile(path string) error {
 	for _, account := range s.accounts {
 		ID := strconv.Itoa(int(account.ID)) + ";"
 		phone := string(account.Phone) + ";"
-		balance := strconv.Itoa(int(account.Balance)) + ";"
+		balance := strconv.Itoa(int(account.Balance))
 
 		list += ID
 		list += phone
@@ -252,5 +254,69 @@ func (s *Service) ExportToFile(path string) error {
 		return ErrFileNotFound
 	}
 
+	return nil
+}
+
+// ImportFromFile import accounts from file
+func (s *Service) ImportFromFile(path string) error {
+	
+	file, err := os.Open(path)
+	if err != nil {
+		log.Print(err)
+		return ErrFileNotFound
+	}
+	
+	defer func(){
+		if err2 := file.Close(); err2 != nil {
+			log.Print(err2)
+		}
+	}()	
+	
+	content := make([]byte, 0)	
+	buf := make([]byte, 4)
+	
+	for {
+		read, err := file.Read(buf)
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			log.Print(err)
+			return ErrFileNotFound
+		}
+		content = append(content, buf[:read]...)
+	}
+
+	data := string(content)
+	
+	accounts := strings.Split(data, ":")
+	accounts = accounts[:len(accounts)-1]
+	
+	for _, account := range accounts {
+		
+		value := strings.Split(account, "/")
+		
+		id,err := strconv.Atoi(value[0])
+		if err!=nil {
+			return err
+		}
+
+		phone :=types.Phone(value[2])
+		
+		balance, err := strconv.Atoi(value[1])
+		if err!=nil {
+			return err
+		}
+		
+		acc := &types.Account {
+			ID: int64(id),
+			Phone: phone,
+			Balance: types.Money(balance),
+		}
+
+		s.accounts = append(s.accounts, acc)
+		log.Print(account)
+	}
 	return nil
 }
