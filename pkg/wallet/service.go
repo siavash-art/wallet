@@ -4,6 +4,9 @@ import (
 	"github.com/siavash-art/wallet/pkg/types"
 	"github.com/google/uuid"
 	"errors"
+	"log"
+	"os"
+	"strconv"
 )
 
 var ErrPhoneRegistered = errors.New("phone already registered")
@@ -12,6 +15,7 @@ var ErrAccountNotFound = errors.New("account not found")
 var ErrNotEnoughBalance = errors.New("not enough balance")
 var ErrPaymentNotFound = errors.New("payment not found")
 var ErrFavoriteNotFound = errors.New("payment not found")
+var ErrFileNotFound = errors.New("file not found")
 
 // Service payments of accounts
 type Service struct {
@@ -198,6 +202,7 @@ func (s *Service) FindFavoriteByID(favoriteID string) (*types.Favorite, error) {
 		
 }
 
+// PayFromFavorite pay from favorite
 func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 
 	favorite, err := s.FindFavoriteByID(favoriteID)
@@ -211,4 +216,41 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	}
 
 	return payment, nil
+}
+
+// ExportToFile exports accounts to file
+func (s *Service) ExportToFile(path string) error {
+
+	file, err := os.Create(path)
+	if err != nil {
+		log.Print(err)
+		return ErrFileNotFound
+	}
+
+	defer func(){
+		if err2 := file.Close(); err2 != nil {
+			log.Print(err2)
+		}
+	}()
+
+	list := ""
+
+	for _, account := range s.accounts {
+		ID := strconv.Itoa(int(account.ID)) + ";"
+		phone := string(account.Phone) + ";"
+		balance := strconv.Itoa(int(account.Balance)) + ";"
+
+		list += ID
+		list += phone
+		list += balance + "|"
+	}
+
+	_, err = file.Write([]byte(list))
+
+	if err != nil {
+		log.Print()
+		return ErrFileNotFound
+	}
+
+	return nil
 }
