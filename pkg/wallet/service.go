@@ -600,3 +600,81 @@ func (s *Service) Import(dir string) error {
 	}
 	return nil
 }
+
+// ExportAccountHistory - export account history by account Id
+ func (s *Service) ExportAccountHistory(accountID int64) ([]types.Payment, error) {
+	var payments []types.Payment
+	for _, payment := range s.payments {
+		if payment.AccountID == accountID {
+			payments= append(payments, *payment)
+		} 	
+	}
+	if payments == nil {		
+		return nil, ErrAccountNotFound
+	}
+	return payments, nil
+ }
+
+ // HistoryToFiles get payments from ExportAccountHistory and add to file
+ func (s *Service) HistoryToFiles(payments []types.Payment, dir string, records int) error {
+	
+	if len(payments) > 0 {
+
+		if len(payments) <= records {
+			file, _ := os.OpenFile(dir + "/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+			defer func() {
+				if cerr := file.Close(); cerr != nil {
+					log.Print(cerr)
+				}
+			}()
+						
+			paymentList := ""
+
+			for _, payment := range payments {
+				ID := fmt.Sprint(payment.ID) + ";"
+				accountID := fmt.Sprint(payment.AccountID) + ";"
+				amount := fmt.Sprint(payment.Amount) + ";"
+				category := fmt.Sprint(payment.Category) + ";"
+				status := fmt.Sprint(payment.Status)
+				paymentList += ID
+				paymentList += accountID
+				paymentList += amount
+				paymentList += category
+				paymentList += status + "\n"
+			}
+			_, err := file.WriteString(paymentList)
+			if err != nil {
+				return  err
+			}
+		
+		} else {
+
+			paymentList := ""
+			counter := 0
+			nextFile := 1
+			var file *os.File
+
+			for _, payment := range payments {
+				if counter == 0 {
+					file, _ = os.OpenFile(dir + "/payments"+fmt.Sprint(nextFile)+".dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+				}
+				counter++
+
+				paymentList = fmt.Sprint(payment.ID) + ";" + fmt.Sprint(payment.AccountID) + ";" + fmt.Sprint(payment.Amount) + ";" + fmt.Sprint(payment.Category) + ";" + fmt.Sprint(payment.Status) + "\n"
+			
+				_, err := file.WriteString(paymentList)
+				if err != nil {
+					return  err
+				}
+				if counter == records {
+					paymentList = ""
+					nextFile++
+					counter =0
+					file.Close()
+				}
+			}
+		}
+
+	}
+	return nil
+ } 
