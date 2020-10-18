@@ -7,10 +7,41 @@ import (
 
 func main() {
 	svc := &wallet.Service{}
-	//svc.RegisterAccount("+992938638676")
-	//svc.RegisterAccount("+992938638677")
+	// svc.RegisterAccount("+992938638676")
+	// svc.RegisterAccount("+992938638677")
+	// svc.Deposit(1, 100_00)
+	// svc.Pay(1, 50_00, "cat")
+	// svc.Deposit(2, 100_00)
+	// svc.Pay(2, 50_00, "food")
+	
+	// payment, err := svc.Pay(1, 10_00, "auto")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }	
+	// favorite, err := svc.FavoritePayment(payment.ID, "school")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// svc.PayFromFavorite(favorite.ID)
+	
+	// payment, err = svc.Pay(2, 10_00, "auto")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }	
+	// favorite, err = svc.FavoritePayment(payment.ID, "school")
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// svc.PayFromFavorite(favorite.ID)
+	
 	//svc.ExportToFile("../data/export.txt")
-	svc.ImportFromFile("../data/export.txt")	
+	//svc.ImportFromFile("../data/export.txt")
+	//svc.Export("../data")
+	svc.Import("../data")
 	// account, err := svc.RegisterAccount("+992938638676")
 	// if err != nil {
 	// 	fmt.Println(err)
