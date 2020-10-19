@@ -729,10 +729,8 @@ func (s *Service) Import(dir string) error {
  } 
 
  // FilterPayments filtered payments
- func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error) {
+ func (s *Service) FilterPayments(accountID int64, goroutines int) (filtPayments []types.Payment, err error) {
 	
-	var filtPayments []types.Payment
-
 	if goroutines < 2 {
 		for _, payment := range s.payments {
 			if payment.AccountID == accountID {
@@ -781,5 +779,5 @@ func (s *Service) Import(dir string) error {
 	if filtPayments == nil {
 		return nil, ErrAccountNotFound
 	} 	
-	return filtPayments, nil
+	return 
  } 
