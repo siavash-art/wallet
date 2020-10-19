@@ -727,3 +727,59 @@ func (s *Service) Import(dir string) error {
 
 	return types.Money(sum)
  } 
+
+ // FilterPayments filtered payments
+ func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error) {
+	
+	var filtPayments []types.Payment
+
+	if goroutines < 2 {
+		for _, payment := range s.payments {
+			if payment.AccountID == accountID {
+				filtPayments = append(filtPayments, *payment)
+			}
+			if filtPayments == nil {
+				return nil, ErrAccountNotFound
+			} 
+		}	
+	}
+	wg := sync.WaitGroup{}	
+	mu := sync.Mutex{}	
+	max := 0
+	count := len(s.payments) / goroutines
+	
+	for i := 0; i < goroutines; i++ {
+		max += count
+		wg.Add(1)
+		go func(val int){
+			defer wg.Done()
+			sum := []types.Payment{}
+			for _, payment := range s.payments {
+				if payment.AccountID == accountID {
+					sum = append(sum, *payment)
+				}
+			}
+			mu.Lock()
+			filtPayments = append(filtPayments, sum...)
+			mu.Unlock()
+		}(max)
+	}
+	wg.Add(1)
+	go func(){
+		defer wg.Done()
+		sum := []types.Payment{}
+		for _, payment := range s.payments[max:] {
+			if payment.AccountID == accountID {
+				sum = append(sum, *payment)
+			}
+		}
+		mu.Lock()
+		filtPayments = append(filtPayments, sum...)
+		mu.Unlock()
+	}()
+	wg.Wait()
+	if filtPayments == nil {
+		return nil, ErrAccountNotFound
+	} 	
+	return filtPayments, nil
+ } 

@@ -1,6 +1,7 @@
 package wallet
 
 import (
+	"log"
 	"github.com/siavash-art/wallet/pkg/types"
 	"testing"
 	"fmt"
@@ -425,7 +426,6 @@ func TestService_SumPayments_success(t *testing.T) {
 	}
 }
 
-//
 func BenchmarkSumPayments(b *testing.B) {
 	var s Service
 
@@ -457,3 +457,24 @@ func BenchmarkSumPayments(b *testing.B) {
 		b.Errorf("error SumPayments, want = %v, got = %v", want, got)
 	}
 } 
+
+func BenchmarkFilterPayments(b *testing.B) {
+	svc := &Service{}
+	account, err := svc.RegisterAccount("+992938638676")
+	if err != nil {
+		b.Errorf("error account = %v", err)
+	}
+	svc.Deposit(account.ID, 200)
+	svc.Pay(account.ID, 10, "auto")
+	svc.Pay(account.ID, 20, "food")
+	svc.Pay(account.ID, 30, "food")
+	svc.Pay(account.ID, 40, "food")
+	svc.Pay(account.ID, 50, "food")
+	svc.Pay(account.ID, 60, "food")
+
+	filt, err := svc.FilterPayments(account.ID, 3)
+	if err != nil {
+		b.Errorf("error FilterPayments = %v", err)
+	}
+	log.Println(len(filt))
+}
