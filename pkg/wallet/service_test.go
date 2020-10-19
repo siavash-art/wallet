@@ -476,5 +476,5 @@ func BenchmarkFilterPayments(b *testing.B) {
 	if err != nil {
 		b.Errorf("error FilterPayments = %v", err)
 	}
-	log.Println(len(filt))
+	log.Println(filt)
 }
