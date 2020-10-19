@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/siavash-art/wallet/pkg/types"
+	"sync"
 )
 
 var ErrPhoneRegistered = errors.New("phone already registered")
@@ -677,4 +678,52 @@ func (s *Service) Import(dir string) error {
 
 	}
 	return nil
+ }
+ 
+ //SumPayments  return sum of payments	
+ func (s *Service) SumPayments(goroutines int) types.Money {	
+	wg := sync.WaitGroup{}	
+	mu := sync.Mutex{}	
+	sum := int64(0)
+	count := 0
+	i := 0
+	
+	if goroutines == 0 {
+		count = len(s.payments) 
+	} else {
+		count = int(len(s.payments) / goroutines)
+	}
+	for i = 0; i < goroutines-1; i++ {
+		wg.Add(1)
+		go func(index int) {
+			defer wg.Done()			
+			val := int64(0)
+			payments := s.payments[index*count : (index+1)*count]
+			
+			for _, payment := range payments {
+				val += int64(payment.Amount)
+			}
+
+			mu.Lock()
+			sum += val
+			mu.Unlock()
+
+		}(i)
+	} 
+	wg.Add(1)
+	go func (){
+		defer wg.Done()
+		val := int64(0)
+		payments := s.payments[i*count:]
+		for _, payment := range payments {
+			val += int64(payment.Amount)
+		}
+		mu.Lock()
+		sum += val
+		mu.Unlock()
+	}()
+	
+	wg.Wait()
+
+	return types.Money(sum)
  } 
