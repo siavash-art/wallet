@@ -136,7 +136,6 @@ func TestService_Repeat_success(t *testing.T) {
 	}
 }
 
-
 func TestService_FavoritePayment_success(t *testing.T) {
 	
 	s := newTestService()
@@ -283,6 +282,150 @@ func TestService_ExportToFile_success(t *testing.T) {
 	}	
 }
 
+func TestService_ImportFromFile_success(t *testing.T) {
+	var svc Service
+	svc.RegisterAccount("+992938638676")
+	svc.RegisterAccount("+992938638677")
+	svc.Deposit(1, 100_00)
+	svc.Pay(1, 50_00, "cat")
+	svc.Deposit(2, 100_00)
+	svc.Pay(2, 50_00, "food")
+	err := svc.Import("../data")
+	if err != nil {
+		t.Error("retur error func Import")
+	return
+	}	
+}
+
+func TestService_Export_success(t *testing.T) {
+	var svc Service
+	svc.RegisterAccount("+992938638676")
+	svc.RegisterAccount("+992938638677")
+	svc.Deposit(1, 100_00)
+	svc.Pay(1, 50_00, "cat")
+	svc.Deposit(2, 100_00)
+	svc.Pay(2, 50_00, "food")
+	err := svc.Export("../../data")
+	if err != nil {
+		t.Error("retur error func Export")
+	return
+	}	
+}
+
+func TestService_Export_fail(t *testing.T) {
+	var svc Service
+	svc.RegisterAccount("+992938638676")
+	svc.RegisterAccount("+992938638677")
+	err := svc.Export("../../data")
+	if err != nil {
+		t.Error("retur error func Export")
+	return
+	}	
+}
+
+func TestService_import_success(t *testing.T) {
+	var svc Service
+	svc.RegisterAccount("+992938638676")
+	svc.RegisterAccount("+992938638677")
+	svc.Deposit(1, 100_00)
+	svc.Pay(1, 50_00, "cat")
+	svc.Deposit(2, 100_00)
+	svc.Pay(2, 50_00, "food")
+	err := svc.Import("../../data")
+	if err != nil {
+		t.Error("retur error func Export")
+	return
+	}	
+}
+
+func TestService_ExportAccountHistory_success(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+992938638676")
+	svc.Deposit(1, 100_00)
+	
+	_, err := svc.Pay(1, 10_00, "auto")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	account, err := svc.ExportAccountHistory(1)
+	if err != nil {
+		t.Errorf("\n expected: %v \n result: %v", account, err)
+	}
+}
+
+func TestService_ExportAccountHistory_notFound(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+992938638676")
+
+	account, err := svc.ExportAccountHistory(11)
+	if err == nil {
+		t.Errorf("\n expected: %v \n result: %v", account, err)
+	}
+}
+
+func TestService_HistoryToFiles_notFound(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+992938638676")
+
+	account, err := svc.ExportAccountHistory(11)
+	if err == nil {
+		t.Errorf("\n expected: %v \n result: %v", account, err)
+	}
+}
+
+func TestService_HistoryToFiles_success(t *testing.T) {
+	svc := Service{}
+	svc.RegisterAccount("+992938638676")
+	svc.Deposit(1, 100_00)
+	
+	_, err := svc.Pay(1, 10_00, "auto")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	
+	payments, err := svc.ExportAccountHistory(1)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	svc.HistoryToFiles(payments, "../../data", 2)
+}
+
+func TestService_SumPayments_success(t *testing.T) {
+	var s Service
+
+	account, err := s.RegisterAccount("+992938638676")
+	if err != nil {
+		t.Errorf("error registration account, account = %v", account)
+	}
+
+	err = s.Deposit(account.ID, 300)
+	if err != nil {
+		t.Errorf("error Depposit, error = %v", err)
+	}
+
+	_, err = s.Pay(account.ID, 10, "food")
+	_, err = s.Pay(account.ID, 20, "sport")
+	_, err = s.Pay(account.ID, 30, "food")
+	_, err = s.Pay(account.ID, 40, "food")
+	_, err = s.Pay(account.ID, 50, "sport")
+	_, err = s.Pay(account.ID, 60, "food")
+
+	if err != nil {
+		t.Errorf("error Pay, error = %v", err)
+	}
+
+	want := types.Money(210)
+	got := s.SumPayments(2)
+
+	if want != got {
+		t.Errorf("error SumPayments, want = %v, got = %v", want, got)
+	}
+}
+
+//
 func BenchmarkSumPayments(b *testing.B) {
 	var s Service
 
