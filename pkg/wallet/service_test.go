@@ -267,3 +267,50 @@ func TestService_Favorite_success_user(t *testing.T) {
 		t.Errorf("PayFromFavorite() Error() can't for an favorite(%v): %v", paymentFavorite, err)
 	}
 }
+
+func TestService_ExportToFile_success(t *testing.T) {
+	
+	s := newTestService()
+	_, _, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error(err)
+		return
+	}	
+	err = s.ExportToFile("../data/export.txt")
+	if err == nil {
+		t.Error("returned nil")
+		return
+	}	
+}
+
+func BenchmarkSumPayments(b *testing.B) {
+	var s Service
+
+	account, err := s.RegisterAccount("+992938638676")
+	if err != nil {
+		b.Errorf("error registration account, account = %v", account)
+	}
+
+	err = s.Deposit(account.ID, 300)
+	if err != nil {
+		b.Errorf("error Depposit, error = %v", err)
+	}
+
+	_, err = s.Pay(account.ID, 10, "food")
+	_, err = s.Pay(account.ID, 20, "sport")
+	_, err = s.Pay(account.ID, 30, "food")
+	_, err = s.Pay(account.ID, 40, "food")
+	_, err = s.Pay(account.ID, 50, "sport")
+	_, err = s.Pay(account.ID, 60, "food")
+
+	if err != nil {
+		b.Errorf("error Pay, error = %v", err)
+	}
+
+	want := types.Money(210)
+	got := s.SumPayments(2)
+
+	if want != got {
+		b.Errorf("error SumPayments, want = %v, got = %v", want, got)
+	}
+} 
