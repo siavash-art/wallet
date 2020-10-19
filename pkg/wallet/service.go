@@ -739,6 +739,7 @@ func (s *Service) Import(dir string) error {
 			if filtPayments == nil {
 				return nil, ErrAccountNotFound
 			} 
+			return
 		}	
 	}
 	wg := sync.WaitGroup{}	
@@ -763,7 +764,7 @@ func (s *Service) Import(dir string) error {
 		}(max)
 	}
 	wg.Add(1)
-	go func(){
+	go func() {
 		defer wg.Done()
 		sum := []types.Payment{}
 		for _, payment := range s.payments[max:] {
