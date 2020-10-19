@@ -747,13 +747,13 @@ func (s *Service) Import(dir string) error {
 	max := 0
 	count := len(s.payments) / goroutines
 	
-	for i := 0; i < goroutines; i++ {
+	for i := 1; i < goroutines; i++ {
 		max += count
 		wg.Add(1)
-		go func(val int){
+		go func(value int){
 			defer wg.Done()
 			sum := []types.Payment{}
-			for _, payment := range s.payments {
+			for _, payment := range s.payments[value-count : value] {
 				if payment.AccountID == accountID {
 					sum = append(sum, *payment)
 				}
