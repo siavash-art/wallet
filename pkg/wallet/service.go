@@ -736,11 +736,11 @@ func (s *Service) Import(dir string) error {
 			if payment.AccountID == accountID {
 				filtPayments = append(filtPayments, *payment)
 			}
-			if filtPayments == nil {
-				return nil, ErrAccountNotFound
-			} 
-			return
 		}	
+		if filtPayments == nil {
+			return nil, ErrAccountNotFound
+		} 
+		return
 	}
 	wg := sync.WaitGroup{}	
 	mu := sync.Mutex{}	
