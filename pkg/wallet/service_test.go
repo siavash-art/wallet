@@ -472,7 +472,7 @@ func BenchmarkFilterPayments(b *testing.B) {
 	svc.Pay(account.ID, 50, "food")
 	svc.Pay(account.ID, 60, "food")
 
-	filt, err := svc.FilterPayments(account.ID, 3)
+	filt, err := svc.FilterPayments(account.ID, 2)
 	if err != nil {
 		b.Errorf("error FilterPayments = %v", err)
 	}
