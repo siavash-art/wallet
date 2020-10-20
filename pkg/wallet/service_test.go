@@ -478,3 +478,32 @@ func BenchmarkFilterPayments(b *testing.B) {
 	}
 	log.Println(len(filt))
 }
+
+func BenchmarkFilterPaymentsByFn(b *testing.B) {
+	svc := &Service{}
+	account, err := svc.RegisterAccount("+992938638676")
+	if err != nil {
+		b.Errorf("error account = %v", err)
+	}
+	svc.Deposit(account.ID, 200)
+	svc.Pay(account.ID, 10, "auto")
+	svc.Pay(account.ID, 20, "food")
+	svc.Pay(account.ID, 30, "food")
+	svc.Pay(account.ID, 40, "food")
+	svc.Pay(account.ID, 50, "food")
+	svc.Pay(account.ID, 60, "food")
+
+	filter :=  func(payment types.Payment) bool {
+		for _, value := range svc.payments {
+			if payment.ID == value.ID {
+				return true
+			}
+		}
+		return false
+	} 
+	filt, err := svc.FilterPaymentsByFn(filter, 1)
+	if err != nil {
+		b.Errorf("error FilterPayments = %v", err)
+	}
+	log.Println(len(filt))
+}
