@@ -864,12 +864,21 @@ func (s *Service) Import(dir string) error {
  func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {	
 	wg := sync.WaitGroup{}
 	channel := make(chan types.Progress)
-		
-	parts := int(s.SumPayments(1) / 100_000_00)		
+	const partsMoney = 1000000
 	
+	payments := make([]types.Money, 0)	
+	for _, payment := range s.payments {
+		payments = append(payments, payment.Amount)
+	}	
+
+	parts := (len(payments)+1) / partsMoney 		
+	
+	if parts <= 0 {
+		parts = 1
+	}
 	for i := 0; i < parts; i++ {
 		wg.Add(1)		
-		go func (channel chan<- types.Progress, data int) {			
+		go func (channel chan<- types.Progress, payments []types.Money, data int) {			
 			sum := types.Money(0)
 			defer wg.Done()			
 			for _, v := range s.payments {
@@ -878,7 +887,7 @@ func (s *Service) Import(dir string) error {
 			channel <- types.Progress {
 				Result: sum,
 			} 		
-		}(channel, i)
+		}(channel, payments, i)
 	}
 	go func() {
 		defer close(channel)
