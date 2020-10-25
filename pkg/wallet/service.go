@@ -863,8 +863,9 @@ func (s *Service) Import(dir string) error {
  // SumPaymentsWithProgress channels
  func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {	
 	wg := sync.WaitGroup{}
-	parts := int(s.SumPayments(1) / 100_000)		
 	channel := make(chan types.Progress)
+		
+	parts := int(s.SumPayments(1) / 100_000_00)		
 	
 	for i := 0; i < parts; i++ {
 		wg.Add(1)		
