@@ -507,3 +507,26 @@ func BenchmarkFilterPaymentsByFn(b *testing.B) {
 	}
 	log.Println(len(filt))
 }
+
+func BenchmarkSumPaymentsWithProgress(b *testing.B) {
+	s := &Service{}
+	account, err := s.RegisterAccount("+992938638676")
+	if err != nil {
+		b.Errorf("error account = %v", err)
+	}
+	s.Deposit(account.ID, 2000000)
+	s.Pay(account.ID, 50000, "auto")
+	s.Pay(account.ID, 100000, "food")
+	s.Pay(account.ID, 200000, "food")
+	s.Pay(account.ID, 250000, "food")
+	s.Pay(account.ID, 100000, "food")
+	
+	// channel := s.SumPaymentsWithProgress()
+	// want := types.Money(700000)
+	// got := channel
+	
+	// if want != got {
+	// 	b.Errorf("error SumPaymentsWithProgress, want = %v, got = %v", want, got)
+	// }
+	s.SumPaymentsWithProgress()	
+}

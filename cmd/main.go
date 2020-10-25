@@ -1,26 +1,32 @@
 package main
 
-import (
-	"fmt"
+import (	
+	//"fmt"
 	"github.com/siavash-art/wallet/pkg/wallet"
+	//"log"
 )
 
 func main() {
 	svc := &wallet.Service{}
 	svc.RegisterAccount("+992938638676")
-	svc.Deposit(1, 200_00)
-	svc.Pay(1, 50_00, "cat")
-	svc.Pay(1, 10_00, "food")
-	svc.Pay(1, 10_00, "cinema")
-	svc.Pay(1, 10_00, "food")
-	svc.Pay(1, 10_00, "food")
+	svc.Deposit(1, 12_000_000)
+	svc.Pay(1, 50_000, "cat")
+	svc.Pay(1, 100_000, "food")
+	svc.Pay(1, 200_000, "cinema")
+	svc.Pay(1, 250_000, "food")
+	svc.Pay(1, 100_000, "food")
 	
-	payments, err := svc.ExportAccountHistory(1)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	svc.HistoryToFiles(payments, "../data", 2)
+	//parts := int(svc.SumPayments(1) / 100_000)			
+	//log.Print(parts)
+
+	svc.SumPaymentsWithProgress()	
+	 	
+	// payments, err := svc.ExportAccountHistory(1)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// svc.HistoryToFiles(payments, "../data", 2)
 	
 	// svc.RegisterAccount("+992938638676")
 	// svc.RegisterAccount("+992938638677")

@@ -837,3 +837,51 @@ func (s *Service) Import(dir string) error {
 	} 	
 	return 
  } 
+
+//Merge merge channels
+ func Merge(channels []<-chan types.Progress) <-chan types.Progress {
+	wg := sync.WaitGroup{}
+	wg.Add(len(channels))
+	merged := make(chan types.Progress)
+
+	for _, ch := range channels {
+		go func(ch <-chan types.Progress){
+			defer wg.Done()
+			for val := range ch {
+				merged <- val
+			}
+		}(ch)		
+	}
+	go func(){
+		defer close(merged)
+		wg.Wait()
+	}() 
+
+	return merged
+}
+
+ // SumPaymentsWithProgress channels
+ func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {	
+	wg := sync.WaitGroup{}
+	parts := int(s.SumPayments(1) / 100_000)		
+	channel := make(chan types.Progress)
+	
+	for i := 0; i < parts; i++ {
+		wg.Add(1)		
+		go func (channel chan<- types.Progress, data int) {			
+			sum := types.Money(0)
+			defer wg.Done()			
+			for _, v := range s.payments {
+				sum += v.Amount
+			}	
+			channel <- types.Progress {
+				Result: sum,
+			} 		
+		}(channel, i)
+	}
+	go func() {
+		defer close(channel)
+		wg.Wait()
+	}()
+	return channel
+ }
